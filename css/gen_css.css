@@ -1,0 +1,80 @@
+#file-data-wrapper {
+    --border-color: #cccccc;
+  }
+  
+  #file-data-wrapper {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+    height: 80vh;
+  }
+  
+  #file-container {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-rows: 3fr 2fr;
+  }
+  
+  #drop-area {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed var(--border-color);
+    display: grid;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  #metadata {
+    padding: 1rem;
+    display: grid;
+    align-items: start;
+    height: fit-content;
+  }
+  
+  #data-container {
+    display: grid;
+    grid-template-areas: 'table' 'form''controls';
+    grid-template-rows: 3fr 1fr 1fr;
+  }
+  
+  #data-table {
+    grid-area: table;
+    position: relative;
+  }
+  
+  #add-data-form {
+    grid-area: form;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  #add-data-form input {
+    height: 2rem;
+  }
+  
+  #form-controls {
+    grid-area: controls;
+  }
+  
+  #data-table-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    overscroll-behavior: none;
+    border: 1px solid var(--border-color);
+  }
+  
+  #data-table-content table tr:first-of-type {
+    font-weight: bold;
+  }
+  
+  #data-table-content table td {
+    white-space: nowrap;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+  }
