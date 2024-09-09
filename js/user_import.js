@@ -152,26 +152,26 @@ document.querySelector("#add-to-table").addEventListener("click", addRowToTable)
 
 function addRowToTable() {
   const tableElem = document.querySelector("#data-table-content table");
-
+  
   const tableBodyElem = tableElem.querySelector("tbody");
   const trLastElem = tableBodyElem.querySelector("tr:last-of-type");
   const trNewElem = trLastElem.cloneNode(true);
-
+  
   trNewElem.querySelectorAll('td').forEach(el => {
     el.innerHTML = "";
   });
-
+  
   trNewElem.querySelector("td:nth-of-type(1)").innerHTML =
-    document.querySelector("#col-1").value;
-
+  document.querySelector("#col-1").value;
+  
   trNewElem.querySelector("td:nth-of-type(2)").innerHTML =
-    document.querySelector("#col-2").value;
-
+  document.querySelector("#col-2").value;
+  
   trNewElem.querySelector("td:nth-of-type(3)").innerHTML =
-    document.querySelector("#col-3").value;
-
+  document.querySelector("#col-3").value;
+  
   tableBodyElem.appendChild(trNewElem);
-
+  
   // 'scrollIntoView()' over scrolls even with
   // 'overscroll-behavior: none;' set on the
   // '#data-table-content' element.
@@ -179,7 +179,36 @@ function addRowToTable() {
   // Therefore, the method selected as the answer:
   // https://stackoverflow.com/questions/270612/scroll-to-bottom-of-div
   document.querySelector("#data-table-content").scrollTop =
-    document.querySelector("#data-table-content").scrollHeight;
+  document.querySelector("#data-table-content").scrollHeight;
+}
+
+// --------------------------------------------------------------
+// Remove duplicates and blanks
+// 
+
+document.querySelector("#remove-doubles").addEventListener("click", removeDoubles);
+
+function removeDoubles() {
+  const idSlot = 1
+  const tableElem = document.querySelector("#data-table-content table");
+  let rows = tableElem.querySelectorAll('tr');
+  let rowLength = rows.length
+  //rows.forEach((element) => console.log(element.innerText))
+  for(let i = 0; i < rows.length-1; i++) {
+    let cols = rows[i].querySelectorAll('td, th');
+    const idCheck = cols[idSlot].innerText;
+    //console.log(idCheck)
+    for(let j = i+1; j < rows.length; j++) {
+      const curCols = rows[j].querySelectorAll('td, th');
+      const curCheck = curCols[idSlot].innerText
+      if(curCheck == idCheck) {
+        tableElem.deleteRow(j)
+        console.log(i + ", " + j)
+        console.log(curCheck + " = " + idCheck + ", removing number " + curCols[0].innerText + ".");
+        rows = tableElem.querySelectorAll('tr');
+      }
+    }
+  }
 }
 
 // --------------------------------------------------------------
