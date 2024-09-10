@@ -4,7 +4,7 @@
   
   #file-data-wrapper {
     display: grid;
-    grid-auto-flow: column;
+    /* grid-auto-flow: column; */
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
     width: 100%;
@@ -33,7 +33,7 @@
     height: fit-content;
   }
   
-  #data-container {
+  #data-container, #new-data-container {
     display: grid;
     grid-template-areas: 'table' 'form''controls';
     grid-template-rows: 3fr 1fr 1fr;
@@ -77,4 +77,8 @@
     white-space: nowrap;
     border-right: 1px solid var(--border-color);
     border-bottom: 1px solid var(--border-color);
+  }
+
+  #imgTest {
+    grid-row: 2;
   }
