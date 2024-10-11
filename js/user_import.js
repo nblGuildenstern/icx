@@ -1,4 +1,23 @@
 window.addEventListener("DOMContentLoaded", (event) => {
+
+  /** Dictionary for the different tags, brands and id endings
+   * Format: Organization : [Tags, Brands, after]
+  */
+  const organizations = {
+    "Solve Houston": ["houston_tx",	"Solve Pest Pros", "~HTX"],
+    "Insight Emerald Coast": ["pensacola_fl",	"Insight Pest Solutions", "~IEC"],
+    "Insight San Antonio": ["san_antonio_tx",	"Insight Pest Solutions", "~ISA"],
+    "Blue Cactus Pest Control": ["mesa_az",	"Blue Cactus Pest Control", "~BC"],
+    "Solve Pest Pros": ["jacksonville_fl",	"Solve Pest Pros", "~SFL"],
+    "Solve Raleigh": ["raleigh_nc",	"Solve Pest Pros", "~SR"],
+    "Bug Shark": ["bug_shark_oh",	"Bug Shark", "~BS"],
+    "Insight Sioux Falls": ["sioux_falls_sd",	"Insight Pest Solutions", "~ISF"],
+    "Protek Pest and Lawn": ["lehi_ut",	"Protek Pest and Lawn", "~PP"],
+    "Synergy Pest Control": ["palm_bay_fl",	"Synergy Pest Control", "~SPC"],
+    "Insight Maine": ["portland_mn",	"Insight Pest Solutions", "~IM"],
+    "Insight South Bend": ["south_bend_IN",	"Insight Pest Solutions", "~ISB"],
+    "Seaport Pest Solutions": ["hartford_ct",	"Seaport Pest Solutions", "~SPS"]
+  }
     // --------------------------------------------------------------
 // Define drop zone
 // https://web.dev/read-files/#define-drop-zone 
@@ -53,6 +72,7 @@ function readCsvFile(file) {
   const reader = new FileReader();
   reader.addEventListener('load', (event) => {
     parseDataIntoTable(event.target.result);
+    formatNewTable(event.target.result);
   });
   reader.readAsText(file);
 }
@@ -82,6 +102,93 @@ function parseDataIntoTable(data) {
   }
 
   document.querySelector("#data-table-content").appendChild(table);
+}
+
+/** Formats 'data' into the correct column order for Zendesk to import*/
+function formatNewTable(data) {
+  const colOrder = [["First Name", 0], ["Last Name", 0], ["Email Address", 0], ["Customer ID", 0], ["Address", 0], ["Phone 1", 0], ["Office Name", 0]]
+  const endOrder = ["name", "email", "external", "details", "phone", "role", "organization", "tags", "brand"]
+  const orgIndex = 6;
+  var table;
+  var firstTable = true;
+  var baseRowCount = 0;
+  if(document.querySelector("#new-table-content") == null) {
+    table = document.createElement("table");
+  } else {
+    table = document.getElementById("new-table-content")
+    firstTable = false;
+    baseRowCount = table.rows.length
+  }
+  table.id = "new-table-content"
+  const rows = data.split("\n");
+  for (let i = 0; i < rows.length; i++) {
+    const cells = rows[i].split(",");
+    const row = table.insertRow(-1);
+    console.log(cells)
+    if(i==0) { //Titles row
+      colOrder.forEach((element) => element[1] = cells.indexOf(element[0]))
+      if(firstTable) {
+        for(let j = 0; j < endOrder.length; j++) {
+          row.insertCell(-1).innerHTML = endOrder[j];
+        }
+      }
+    } else {
+      row.insertCell(-1).innerHTML = cells[colOrder[0][1]].replaceAll("\"", "") + " " + cells[colOrder[1][1]].replaceAll("\"", "") // First and Last Name
+      rowLoop: for(let j = 2; j < colOrder.length; j++) {
+        switch(colOrder[j][0]) {
+          case "Customer ID":
+            let org = cells[colOrder[orgIndex][1]].replaceAll("\"", "");
+            console.log(table.rows.length)
+            let newID = cells[colOrder[j][1]].replaceAll("\"", "") + organizations[org][2];
+            for(let k = 0; k < table.rows.length-1; k++) { //see if id is a duplicate
+              if(newID == table.rows[k].children[2].innerHTML) {
+                table.deleteRow(-1);
+                break rowLoop;
+              }
+            }
+            let curCell = row.insertCell(-1);
+            curCell.innerHTML = newID
+            curCell.id = "Customer-id";
+            break;
+          case "Office Name":
+            row.insertCell(-1).innerHTML = "End-user";
+            row.insertCell(-1).innerHTML = cells[colOrder[j][1]].replaceAll("\"", "")
+            row.insertCell(-1).innerHTML = organizations[cells[colOrder[j][1]].replaceAll("\"", "")][0]
+            break;
+          case "Phone 1":
+            let phone = "+1" + cells[colOrder[j][1]].replaceAll("\"", "");
+            console.log("working")
+            if(cells[colOrder[j][1]].replaceAll("\"", "") == "") { //check if phone # exists
+              if(cells[colOrder[2][1]].replaceAll("\"", "") == "") { //check if email exists and break out of rowLoop if it doesn't
+                table.deleteRow(-1);
+                console.log("Working" + cells[colOrder[0][0]])
+                break rowLoop;
+              }
+              phone = ""
+            }
+            row.insertCell(-1).innerHTML = phone
+            break;
+          default:
+            row.insertCell(-1).innerHTML = cells[colOrder[j][1]].replaceAll("\"", "")
+            break;
+        }
+
+
+        if(j==colOrder.length-1) {
+          row.insertCell(-1).innerHTML = organizations[cells[colOrder[j][1]].replaceAll("\"", "")][1]
+        }
+      }
+    }
+    // if (cells.length > 1) {
+    //   const row = table.insertRow(-1);
+    //   for (let j = 0; j < cells.length; j++) {
+    //     const cell = row.insertCell(-1);
+    //     cell.innerHTML = cells[j];
+    //   }
+    // }
+  }
+
+  document.querySelector("#new-data-table-content").appendChild(table);
 }
 
 function parseCSV(str) {
@@ -182,6 +289,8 @@ function addRowToTable() {
   document.querySelector("#data-table-content").scrollHeight;
 }
 
+
+
 // --------------------------------------------------------------
 // Remove duplicates and blanks
 // 
@@ -219,8 +328,9 @@ function removeDoubles() {
 document.querySelector("#save-as-csv").addEventListener("click", saveAsCSV);
 
 function saveAsCSV() {
-  const tableElem = document.querySelector("#data-table-content table");
-  const csv_string = convertTableDataToCsv(tableElem);
+  const tableElem = document.querySelector("#new-table-content table");
+  const tableElem2 = document.getElementById("new-table-content");
+  const csv_string = convertTableDataToCsv(tableElem2);
   downloadCsv(csv_string, "table");
 }
 
