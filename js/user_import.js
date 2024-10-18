@@ -124,7 +124,6 @@ function formatNewTable(data) {
   for (let i = 0; i < rows.length; i++) {
     const cells = rows[i].split(",");
     const row = table.insertRow(-1);
-    console.log(cells)
     if(i==0) { //Titles row
       colOrder.forEach((element) => element[1] = cells.indexOf(element[0]))
       if(firstTable) {
@@ -138,7 +137,6 @@ function formatNewTable(data) {
         switch(colOrder[j][0]) {
           case "Customer ID":
             let org = cells[colOrder[orgIndex][1]].replaceAll("\"", "");
-            console.log(table.rows.length)
             let newID = cells[colOrder[j][1]].replaceAll("\"", "") + organizations[org][2];
             for(let k = 0; k < table.rows.length-1; k++) { //see if id is a duplicate
               if(newID == table.rows[k].children[2].innerHTML) {
@@ -157,11 +155,9 @@ function formatNewTable(data) {
             break;
           case "Phone 1":
             let phone = "+1" + cells[colOrder[j][1]].replaceAll("\"", "");
-            console.log("working")
             if(cells[colOrder[j][1]].replaceAll("\"", "") == "") { //check if phone # exists
               if(cells[colOrder[2][1]].replaceAll("\"", "") == "") { //check if email exists and break out of rowLoop if it doesn't
                 table.deleteRow(-1);
-                console.log("Working" + cells[colOrder[0][0]])
                 break rowLoop;
               }
               phone = ""
@@ -312,8 +308,6 @@ function removeDoubles() {
       const curCheck = curCols[idSlot].innerText
       if(curCheck == idCheck) {
         tableElem.deleteRow(j)
-        console.log(i + ", " + j)
-        console.log(curCheck + " = " + idCheck + ", removing number " + curCols[0].innerText + ".");
         rows = tableElem.querySelectorAll('tr');
       }
     }
@@ -330,14 +324,18 @@ document.querySelector("#save-as-csv").addEventListener("click", saveAsCSV);
 function saveAsCSV() {
   const tableElem = document.getElementById("new-table-content");
   const rows = tableElem.querySelectorAll('tr');
-  var numSets = Math.ceil((rows-1) / 999);
+  var numSets = Math.ceil((rows.length-1) / 999);
+  console.log(numSets)
   var csv_strings = [];
   for(var i = 0; i < numSets; i++) {
-    csv_strings.appendChild(convertTableDataToCsv(tableElem, i))
+    csv_strings.push(convertTableDataToCsv(tableElem, i))
   }
+  console.log(csv_strings)
   // csv_string = convertTableDataToCsv(tableElem);
   downloadCsv(csv_strings, "table");
 }
+
+
 
 function convertTableDataToCsv(tableElem, setNum, separator = ',') {
   // Select rows from table element
@@ -375,8 +373,9 @@ function convertTableDataToCsv(tableElem, setNum, separator = ',') {
 }
 
 function downloadCsv(csv_strings, table_id) {
+  console.log(csv_strings)
   csv_strings.forEach((csv_string, i) => {
-    const filename = 'export' + i + '_' + table_id + '_' + new Date().toLocaleDateString() + '.csv';
+    const filename = 'Export ' + (i+1) + '_' + new Date().toLocaleDateString() + '.csv';
     const link = document.createElement('a');
     link.style.display = 'none';
     link.setAttribute('target', '_blank');
