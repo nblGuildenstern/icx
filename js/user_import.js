@@ -107,7 +107,7 @@ function parseDataIntoTable(data) {
 /** Formats 'data' into the correct column order for Zendesk to import*/
 function formatNewTable(data) {
   const colOrder = [["First Name", 0], ["Last Name", 0], ["Email Address", 0], ["Customer ID", 0], ["Address", 0], ["Phone 1", 0], ["Office Name", 0]]
-  const endOrder = ["name", "email", "external", "details", "phone", "role", "organization", "tags", "brand"]
+  const endOrder = ["First Name", "Last Name", "Email", "External_ID", "Address", "Phone", "role", "organization", "tags", "brand"]
   const orgIndex = 6;
   var table;
   var firstTable = true;
@@ -132,12 +132,12 @@ function formatNewTable(data) {
         }
       }
     } else {
-      row.insertCell(-1).innerHTML = cells[colOrder[0][1]].replaceAll("\"", "") + " " + cells[colOrder[1][1]].replaceAll("\"", "") // First and Last Name
-      rowLoop: for(let j = 2; j < colOrder.length; j++) {
+      //row.insertCell(-1).innerHTML = cells[colOrder[0][1]].replaceAll("\"", "") + " " + cells[colOrder[1][1]].replaceAll("\"", "") // First and Last Name
+      rowLoop: for(let j = 0; j < colOrder.length; j++) {
         switch(colOrder[j][0]) {
           case "Customer ID":
             let org = cells[colOrder[orgIndex][1]].replaceAll("\"", "");
-            let newID = cells[colOrder[j][1]].replaceAll("\"", "") + organizations[org][2];
+            let newID = cells[colOrder[j][1]].replaceAll("\"", "");// + organizations[org][2];
             for(let k = 0; k < table.rows.length-1; k++) { //see if id is a duplicate
               if(newID == table.rows[k].children[2].innerHTML) {
                 table.deleteRow(-1);
@@ -154,7 +154,7 @@ function formatNewTable(data) {
             row.insertCell(-1).innerHTML = organizations[cells[colOrder[j][1]].replaceAll("\"", "")][0]
             break;
           case "Phone 1":
-            let phone = "+1" + cells[colOrder[j][1]].replaceAll("\"", "");
+            let phone = cells[colOrder[j][1]].replaceAll("\"", "");
             if(cells[colOrder[j][1]].replaceAll("\"", "") == "") { //check if phone # exists
               if(cells[colOrder[2][1]].replaceAll("\"", "") == "") { //check if email exists and break out of rowLoop if it doesn't
                 table.deleteRow(-1);
