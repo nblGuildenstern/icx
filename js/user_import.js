@@ -328,18 +328,37 @@ function removeDoubles() {
 document.querySelector("#save-as-csv").addEventListener("click", saveAsCSV);
 
 function saveAsCSV() {
-  const tableElem = document.querySelector("#new-table-content table");
-  const tableElem2 = document.getElementById("new-table-content");
-  const csv_string = convertTableDataToCsv(tableElem2);
-  downloadCsv(csv_string, "table");
+  const tableElem = document.getElementById("new-table-content");
+  const rows = tableElem.querySelectorAll('tr');
+  var numSets = Math.ceil((rows-1) / 999);
+  var csv_strings = [];
+  for(var i = 0; i < numSets; i++) {
+    csv_strings.appendChild(convertTableDataToCsv(tableElem, i))
+  }
+  // csv_string = convertTableDataToCsv(tableElem);
+  downloadCsv(csv_strings, "table");
 }
 
-function convertTableDataToCsv(tableElem, separator = ',') {
+function convertTableDataToCsv(tableElem, setNum, separator = ',') {
   // Select rows from table element
   const rows = tableElem.querySelectorAll('tr');
   // Construct csv array
   const csv = [];
-  for (let i = 0; i < rows.length; i++) {
+
+  const row = [];
+  const cols = rows[0].querySelectorAll('td, th');
+  for (let j = 0; j < cols.length; j++) {
+    // Clean innertext to remove multiple spaces and jumpline (break csv)
+    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/(\s\s)/gm, ' ')
+    // Escape double-quote with double-double-quote (see https://stackoverflow.com/questions/17808511/properly-escape-a-double-quote-in-csv)
+    data = data.replace(/"/g, '""');
+    // Push escaped string
+    row.push('"' + data + '"');
+  }
+  csv.push(row.join(separator));
+
+  var setLenth = (rows.length < (setNum+1)*999)? rows.length: (setNum+1)*999;
+  for (let i = setNum*999 + 1; i < setLenth; i++) {
     const row = [];
     const cols = rows[i].querySelectorAll('td, th');
     for (let j = 0; j < cols.length; j++) {
@@ -355,15 +374,17 @@ function convertTableDataToCsv(tableElem, separator = ',') {
   return csv.join('\n');
 }
 
-function downloadCsv(csv_string, table_id) {
-  const filename = 'export_' + table_id + '_' + new Date().toLocaleDateString() + '.csv';
-  const link = document.createElement('a');
-  link.style.display = 'none';
-  link.setAttribute('target', '_blank');
-  link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+function downloadCsv(csv_strings, table_id) {
+  csv_strings.forEach((csv_string, i) => {
+    const filename = 'export' + i + '_' + table_id + '_' + new Date().toLocaleDateString() + '.csv';
+    const link = document.createElement('a');
+    link.style.display = 'none';
+    link.setAttribute('target', '_blank');
+    link.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv_string));
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
 }
 });
